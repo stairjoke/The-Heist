@@ -42,26 +42,7 @@ public class EnemyManager : MonoBehaviour {
 	}
 
 	public void makeEnemy(){
-		/*
-		//Find the closest Spawn point to the player
 
-		Transform tMin = null; // Pretty much nothing
-		float mDist = Mathf.Infinity; // Most certainly far away...
-		float cDist = Mathf.Infinity; //Far away
-
-		foreach(Transform t in transform){ //Iterate through all child objects
-			if(t.name.Contains("spawn")){
-				cDist = Vector3.Distance(player.position, t.position);
-				if(cDist < mDist){
-					mDist = cDist;
-					tMin = t;
-				}
-			}
-		}
-		*/
-		//Spawn Enemies
-
-		Transform tRand;
 		foreach (Transform t in transform) {
 			if (t.name.Contains("spawn") && Random.value > 0.5f) {
 				var newEnemy = Instantiate (enemyPrefab, t.position, t.rotation);
@@ -70,13 +51,5 @@ public class EnemyManager : MonoBehaviour {
 				break;
 			}
 		}
-
-		/*
-		while (currentNoOfEnemiesInGame < maxNoOfEnemiesInGame) {
-			var newEnemy = Instantiate (enemyPrefab, tMin.position, tMin.rotation);
-			newEnemy.transform.parent = this.transform;
-			currentNoOfEnemiesInGame++;
-		}
-		*/
 	}
 }

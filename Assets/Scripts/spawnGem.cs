@@ -10,11 +10,6 @@ public class spawnGem : MonoBehaviour {
 
 	private int currentNoOfGems = 0;
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-
 	IEnumerator makeGem(){
 		yield return new WaitForSeconds (Random.value * 1);
 		var newGem = Instantiate (gemPrefab, transform);
