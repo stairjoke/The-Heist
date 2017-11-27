@@ -4,17 +4,18 @@ using UnityEngine;
 
 public class UserInputAbstraction : MonoBehaviour
 {
-    public static Vector2 userMotionVector()
+    public static Vector3 userMotionVector()
     {
-        Vector2 motion = new Vector2();
+        Vector3 motion = new Vector3();
 #if UNITY_EDITOR || UNITY_STANDALONE
         motion.x = Input.GetAxis("Horizontal");
-        motion.y = Input.GetAxis("Vertical");
+        motion.y = 0f;
+        motion.z = Input.GetAxis("Vertical");
 #endif
 
 #if UNITY_IOS
 #endif
-        return motion;
+        return motion.normalized;
     }
     public static Vector3 usertargetCoordinateWorldSpace(LayerMask mask){
 
