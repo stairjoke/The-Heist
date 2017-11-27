@@ -15,9 +15,12 @@ public class PlayerBehaviour : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        shoot();
-        setDragDefault();
-        move();
+        shoot(); //First shoot
+        move(); //Then Move
+        setDragDefault(); //Then reset drag, incase it was changed by environment
+        /*
+         * Drag reset must be done last, in order for external drag sources to have an impact on move()
+        */
 	}
 
     private void setDragDefault(){
@@ -25,16 +28,25 @@ public class PlayerBehaviour : MonoBehaviour {
     }
 
     public void receiveForce(Vector3 force3D, float dragDifference = 0f){
+        /*
+         * Receives external forces and drag
+         * Example: Player runs into force field
+         * Example: Player runs into mud
+        */
         force3D.y = 0f;
-        if (!force3D.magnitude.Equals(0f)){
+        if (!force3D.magnitude.Equals(0f)){ //Only apply if relevant
             me.AddForce(force3D, ForceMode.Force);
         }
-        if (!dragDifference.Equals(0f)){
+        if (!dragDifference.Equals(0f)){ //Only apply if relevant
             me.drag = backupInitialDragValue + dragDifference;
         }
     }
 
     private void move(){
+        /*
+         * add motion to rigidbody using deltaTime and move Speed
+         * add motino as force, not at acceleration to avoid infinite speeds
+        */
         me.AddForce(UserInputAbstraction.motionVector() * moveSpeed * Time.deltaTime, ForceMode.Force);
     }
 
