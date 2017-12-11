@@ -5,15 +5,21 @@ using UnityEngine.Apple;
 
 public class UserInputAbstraction : MonoBehaviour
 {
-    private Vector3 motion = new Vector3();
-    private Vector3 lastCalledMotion = new Vector3(0,0,0);
+    private Vector3 accelorometerInput = new Vector3(0,0,0);
 
-    private static Vector3 dampen(Vector3 vector, float minimumMagnitude){
-        if(vector.normalized.magnitude <= minimumMagnitude){
-            return new Vector3(0, 0, 0);
-        }else{
-            return vector;
-        }
+    public void readAcceleration(){
+        accelorometerInput = Input.acceleration;
+        Debug.Log(accelorometerInput);
+        StartCoroutine(accelerationAsyncRead());
+    }
+
+    public IEnumerator accelerationAsyncRead(){
+        yield return new WaitForEndOfFrame();
+        readAcceleration();
+    }
+
+    void Start(){
+        readAcceleration();
     }
 
     public Vector3 motionVector()
@@ -21,20 +27,20 @@ public class UserInputAbstraction : MonoBehaviour
         /*
          * Translates different input options into one unified vector
         */
+        Vector3 motion = new Vector3(0,0,0);
+
 #if UNITY_EDITOR || UNITY_STANDALONE
         motion.x = Input.GetAxisRaw("Horizontal");
-        motion.y = 0f;
         motion.z = Input.GetAxisRaw("Vertical");
 #endif
 #if UNITY_IOS
-        motion.x = Input.acceleration.x;
-        motion.y = 0f;
-        motion.z = Input.acceleration.y;
+        motion.x = accelorometerInput.x;
+        motion.z = accelorometerInput.y;
 #endif
-        motion = motion * Time.deltaTime;
-        motion = motion + lastCalledMotion;
-        lastCalledMotion = dampen(motion.normalized, 0.1f);
-        return lastCalledMotion;
+        if(motion.magnitude < 0.005f){
+            motion = Vector3.zero;
+        }
+        return motion;
     }
 
     public static Vector3 targetCoordinateWorldSpace(LayerMask mask)

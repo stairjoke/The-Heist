@@ -7,23 +7,14 @@ public class PlayerBehaviour : MonoBehaviour {
     public float moveSpeed = 1;
     private float backupInitialDragValue;
     private Rigidbody me;
+    public Transform UserInputAbstractionEmpty;
     private UserInputAbstraction abstractInputs;
 
     void Start(){
         backupInitialDragValue = GetComponent<Rigidbody>().drag;
         me = GetComponent<Rigidbody>();
-        abstractInputs = new UserInputAbstraction();
+        abstractInputs = UserInputAbstractionEmpty.GetComponent<UserInputAbstraction>();
     }
-	
-	// Update is called once per frame
-	void Update () {
-        shoot(); //First shoot
-        move(); //Then Move
-        setDragDefault(); //Then reset drag, incase it was changed by environment
-        /*
-         * Drag reset must be done last, in order for external drag sources to have an impact on move()
-        */
-	}
 
     private void setDragDefault(){
         me.drag = backupInitialDragValue;
@@ -58,5 +49,16 @@ public class PlayerBehaviour : MonoBehaviour {
         }else{
             //GetComponent -> Weapon -> isFiring=false
         }
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        shoot(); //First shoot
+        move(); //Then Move
+        setDragDefault(); //Then reset drag, incase it was changed by environment
+                          /*
+                           * Drag reset must be done last, in order for external drag sources to have an impact on move()
+                          */
     }
 }
