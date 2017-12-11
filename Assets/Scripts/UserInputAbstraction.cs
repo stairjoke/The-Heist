@@ -1,23 +1,40 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Apple;
 
 public class UserInputAbstraction : MonoBehaviour
 {
-    public static Vector3 motionVector()
+    private Vector3 motion = new Vector3();
+    private Vector3 lastCalledMotion = new Vector3(0,0,0);
+
+    private static Vector3 dampen(Vector3 vector, float minimumMagnitude){
+        if(vector.normalized.magnitude <= minimumMagnitude){
+            return new Vector3(0, 0, 0);
+        }else{
+            return vector;
+        }
+    }
+
+    public Vector3 motionVector()
     {
         /*
          * Translates different input options into one unified vector
         */
-        Vector3 motion = new Vector3();
 #if UNITY_EDITOR || UNITY_STANDALONE
         motion.x = Input.GetAxisRaw("Horizontal");
         motion.y = 0f;
         motion.z = Input.GetAxisRaw("Vertical");
 #endif
 #if UNITY_IOS
+        motion.x = Input.acceleration.x;
+        motion.y = 0f;
+        motion.z = Input.acceleration.y;
 #endif
-        return motion.normalized; //scale vector if more than one axis is given by user
+        motion = motion * Time.deltaTime;
+        motion = motion + lastCalledMotion;
+        lastCalledMotion = dampen(motion.normalized, 0.1f);
+        return lastCalledMotion;
     }
 
     public static Vector3 targetCoordinateWorldSpace(LayerMask mask)

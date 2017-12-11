@@ -7,10 +7,12 @@ public class PlayerBehaviour : MonoBehaviour {
     public float moveSpeed = 1;
     private float backupInitialDragValue;
     private Rigidbody me;
+    private UserInputAbstraction abstractInputs;
 
     void Start(){
         backupInitialDragValue = GetComponent<Rigidbody>().drag;
         me = GetComponent<Rigidbody>();
+        abstractInputs = new UserInputAbstraction();
     }
 	
 	// Update is called once per frame
@@ -47,7 +49,7 @@ public class PlayerBehaviour : MonoBehaviour {
          * add motion to rigidbody using deltaTime and move Speed
          * add motino as force, not at acceleration to avoid infinite speeds
         */
-        me.AddForce(UserInputAbstraction.motionVector() * moveSpeed * Time.deltaTime, ForceMode.Force);
+        me.AddForce(abstractInputs.motionVector() * moveSpeed * Time.deltaTime, ForceMode.Force);
     }
 
     private void shoot(){
