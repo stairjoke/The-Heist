@@ -10,8 +10,6 @@ namespace theHeist
 
         private NavMeshAgent navigation;
         public Transform UserInputAbstractionEmpty;
-        //private UserInputAbstraction abstractInputs;
-        private int motionFingerId = -1;
 
         void Start()
         {
@@ -20,24 +18,26 @@ namespace theHeist
         }
 
         //Moevement
-        private bool fingerTouchingGameObject(Touch finger, GameObject target, bool useUserInteractibleLayerMask = true){
-            //trace from camera to game
+        private RaycastHit[] fingerToRaycastHit(Touch finger, LayerMask mask){
             var ray = Camera.current.ScreenPointToRay(finger.position);
             RaycastHit[] hits;
-            bool hitMe = false;
-
             //Raycast from finger to scene
 #if DEBUG
-            if(Camera.current.transform.position.y < 35f || Camera.current.transform.position.y > 37f){
+            if (Camera.current.transform.position.y < 35f || Camera.current.transform.position.y > 37f)
+            {
                 Debug.LogError("RAYCAST for touch to motion only tests 3 units, make sure your near and far plane are set as narrow as possible!");
             }
 #endif
+            hits = Physics.RaycastAll(ray, 3, mask);
+            return hits;
+        }
+        private bool fingerTouchingGameObject(Touch finger, GameObject target){
+            //trace from camera to game
+            bool hitMe = false;
+            RaycastHit[] hits;
             //collect all collisions of raycast
-            if(useUserInteractibleLayerMask){
-                hits = Physics.RaycastAll(ray, 3, LayerMask.GetMask("UserInteractible"));
-            }else{
-                hits = Physics.RaycastAll(ray, 3);
-            }
+            hits = fingerToRaycastHit(finger, LayerMask.GetMask("UserInteractible"));
+
             //test if once of the collisions hit the target
             foreach(RaycastHit hit in hits){
                 LinkToToplevel top = hit.transform.GetComponent<LinkToToplevel>();
@@ -48,8 +48,11 @@ namespace theHeist
 
             return hitMe;
         }
-        private bool addPointToPlayerMotionPath(Vector2 screenCoordinates, bool touchEnded = false){
-            /* convert to world coordinates (see "fingerTouchingGameObject")
+
+        public float minDistance = 2;
+        private List<Vector3> playerMotionPath;
+        private void addToPlayerMotionPath(Touch finger){
+            /* convert to world coordinates
              * see if there are obstacles between this point and last point
              * > only accept points with no obstacles, to avoid cheating by
              * > dragging across a labyrinth wall
@@ -60,8 +63,30 @@ namespace theHeist
              * 
              * if point added to list return true, else return false
             */
-            return false;
+            RaycastHit[] hits = fingerToRaycastHit(finger, LayerMask.GetMask("screenToWorldRaycastTarget"));
+            Vector3 point = hits[0].point;
+            Vector3 lastPoint = (playerMotionPath.Count <= 0) ? this.transform.position : playerMotionPath[playerMotionPath.Count - 1];
+            float distance = Vector3.Distance(point, lastPoint);
+            bool touchEnded = false;
+            if(finger.phase == TouchPhase.Ended || finger.phase == TouchPhase.Canceled){
+                touchEnded = true;
+            }
+            //If this is a new gesture, clear the old path
+            if(finger.phase == TouchPhase.Began){
+                playerMotionPath.Clear();
+            }
+
+            if((distance > minDistance || touchEnded) && Physics.Raycast(point, lastPoint, distance, LayerMask.GetMask("StaticObjects")))){
+                /* Translation:
+                 * if distance sufficient or touch ended, test if new point leads thrugh a wall
+                */
+                playerMotionPath.Add(point);
+            }
+
+            //playerMotionPath_temporary
         }
+
+        private int motionFingerId = -1;
         private bool planPlayerMovement(){
             /* if user touches player with finger
              * > allow for new path
@@ -99,30 +124,14 @@ namespace theHeist
                 }
 
                 //At this point we should have a touch ready for use
-                if(motionFinger.fingerId != -1){
-                    /*
-                     * 1: get touchPhase
-                    */
-                    switch (motionFinger.phase)
-                    {
-                        case TouchPhase.Ended:
-                            //Set last known coordinate as point
-                            motionFingerId = -1;
-                            break;
-                        case TouchPhase.Canceled:
-                            //Set last known coordinate as point
-                            motionFingerId = -1;
-                            break;
-                        case TouchPhase.Moved:
-                            //Push coordinate to path
-                            break;
-                    }
-                }else{
+                if(motionFinger.fingerId == motionFingerId && motionFingerId != -1){
+                    addToPlayerMotionPath(motionFinger);
+                }/*else{
                     //did not get valid touch (no finger on player)
-                    //if there is somewhere to go, go there
-                }
+                }*/
             }else{ //User isn't interacting
                 motionFingerId = -1; //currently not tracking a finger
+                //tapping is not registered in motion methods, interrupted touches are ignored
             }
             return false;
         }
