@@ -9,7 +9,7 @@ namespace theHeist
     {
 
         private NavMeshAgent navigation;
-        public Transform UserInputAbstractionEmpty;
+        //public Transform UserInputAbstractionEmpty;
 
         void Start()
         {
@@ -50,7 +50,7 @@ namespace theHeist
         }
 
         public float minDistance = 2;
-        private List<Vector3> playerMotionPath;
+        private List<Vector3> playerMotionPath = new List<Vector3>();
         private void addToPlayerMotionPath(Touch finger){
             /* convert to world coordinates
              * see if there are obstacles between this point and last point
@@ -64,7 +64,8 @@ namespace theHeist
              * if point added to list return true, else return false
             */
             RaycastHit[] hits = fingerToRaycastHit(finger, LayerMask.GetMask("screenToWorldRaycastTarget"));
-            Vector3 point = hits[0].point;
+            Vector3 point = (hits.Length > 0) ? hits[0].point : new Vector3(10,0,10);
+            Debug.Log(hits.Length); //always zero
             Vector3 lastPoint = (playerMotionPath.Count <= 0) ? this.transform.position : playerMotionPath[playerMotionPath.Count - 1];
             float distance = Vector3.Distance(point, lastPoint);
             bool touchEnded = false;
@@ -76,7 +77,7 @@ namespace theHeist
                 playerMotionPath.Clear();
             }
 
-            if((distance > minDistance || touchEnded) && Physics.Raycast(point, lastPoint, distance, LayerMask.GetMask("StaticObjects")))){
+            if((distance > minDistance || touchEnded) && Physics.Raycast(point, lastPoint, distance, LayerMask.GetMask("StaticObjects"))){
                 /* Translation:
                  * if distance sufficient or touch ended, test if new point leads thrugh a wall
                 */
@@ -116,6 +117,7 @@ namespace theHeist
                     //right one to take input from
                     foreach(Touch finger in Input.touches){
                         if(fingerTouchingGameObject(finger, this.gameObject)){
+                            Debug.Log("Finger touching game object"); //works
                             motionFinger = finger;
                             motionFingerId = motionFinger.fingerId;
                             break;
@@ -139,7 +141,11 @@ namespace theHeist
             /* Method makes player follow motion path unless new motion path is
              * entered or end of path has been reached
             */
-
+            planPlayerMovement();
+            if(playerMotionPath.Count > 0 && navigation.remainingDistance < minDistance/4){
+                navigation.SetDestination(playerMotionPath[0]);
+                playerMotionPath.RemoveAt(0);
+            }
         }
 
         //Fighting
