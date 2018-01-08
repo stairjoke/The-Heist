@@ -12,7 +12,6 @@ namespace theHeist
         public void readAcceleration()
         {
             accelorometerInput = Input.acceleration;
-            Debug.Log(accelorometerInput);
             StartCoroutine(accelerationAsyncRead());
         }
 
