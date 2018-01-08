@@ -15,7 +15,6 @@ namespace theHeist
         {
             navigation = GetComponent<NavMeshAgent>();
             //abstractInputs = UserInputAbstractionEmpty.GetComponent<UserInputAbstraction>();
-            playerMotionPath.Add(new Vector3(10,0,10));
         }
 
         //Moevement
@@ -58,7 +57,7 @@ namespace theHeist
              * if point added to list return true, else return false
             */
             RaycastHit[] hits = fingerToRaycastHit(finger, LayerMask.GetMask("screenToWorldRaycastTarget"));
-            Vector3 point = (hits.Length > 0) ? hits[0].point : new Vector3(10,0,10); //works
+            Vector3 point = (hits.Length > 0) ? hits[0].point : this.transform.position; //works
             Vector3 lastPoint = (playerMotionPath.Count <= 0) ? this.transform.position : playerMotionPath[playerMotionPath.Count - 1];
             float distance = Vector3.Distance(point, lastPoint);
             bool touchEnded = false;
