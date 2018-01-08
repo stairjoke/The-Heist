@@ -119,11 +119,8 @@ namespace theHeist
                 }
 
                 //At this point we should have a touch ready for use
-                if(motionFinger.fingerId == motionFingerId && motionFingerId != -1){
-                    addToPlayerMotionPath(motionFinger);
-                }/*else{
-                    //did not get valid touch (no finger on player)
-                }*/
+                Debug.Log(motionFingerId);
+                addToPlayerMotionPath(motionFinger);
             }else{ //User isn't interacting
                 motionFingerId = -1; //currently not tracking a finger
                 //tapping is not registered in motion methods, interrupted touches are ignored
