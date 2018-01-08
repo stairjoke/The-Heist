@@ -15,20 +15,14 @@ namespace theHeist
         {
             navigation = GetComponent<NavMeshAgent>();
             //abstractInputs = UserInputAbstractionEmpty.GetComponent<UserInputAbstraction>();
+            playerMotionPath.Add(new Vector3(10,0,10));
         }
 
         //Moevement
         private RaycastHit[] fingerToRaycastHit(Touch finger, LayerMask mask){
             var ray = Camera.current.ScreenPointToRay(finger.position);
             RaycastHit[] hits;
-            //Raycast from finger to scene
-#if DEBUG
-            if (Camera.current.transform.position.y < 35f || Camera.current.transform.position.y > 37f)
-            {
-                Debug.LogError("RAYCAST for touch to motion only tests 3 units, make sure your near and far plane are set as narrow as possible!");
-            }
-#endif
-            hits = Physics.RaycastAll(ray, 3, mask);
+            hits = Physics.RaycastAll(ray, 50, mask);
             return hits;
         }
         private bool fingerTouchingGameObject(Touch finger, GameObject target){
@@ -64,8 +58,7 @@ namespace theHeist
              * if point added to list return true, else return false
             */
             RaycastHit[] hits = fingerToRaycastHit(finger, LayerMask.GetMask("screenToWorldRaycastTarget"));
-            Vector3 point = (hits.Length > 0) ? hits[0].point : new Vector3(10,0,10);
-            Debug.Log(hits.Length); //always zero
+            Vector3 point = (hits.Length > 0) ? hits[0].point : new Vector3(10,0,10); //works
             Vector3 lastPoint = (playerMotionPath.Count <= 0) ? this.transform.position : playerMotionPath[playerMotionPath.Count - 1];
             float distance = Vector3.Distance(point, lastPoint);
             bool touchEnded = false;
