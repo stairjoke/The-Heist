@@ -45,6 +45,7 @@ namespace theHeist
         public float minDistance = 2;
         private List<Vector3> playerMotionPath = new List<Vector3>();
         private void addToPlayerMotionPath(Touch finger){
+            Debug.Log("TRY: Add waypoint");
             /* convert to world coordinates
              * see if there are obstacles between this point and last point
              * > only accept points with no obstacles, to avoid cheating by
@@ -63,20 +64,21 @@ namespace theHeist
             bool touchEnded = false;
             if(finger.phase == TouchPhase.Ended || finger.phase == TouchPhase.Canceled){
                 touchEnded = true;
+                Debug.Log("Touch Ended");
             }
             //If this is a new gesture, clear the old path
             if(finger.phase == TouchPhase.Began){
+                Debug.Log("New touch, clearing waypoint path");
                 playerMotionPath.Clear();
             }
 
-            if((distance > minDistance || touchEnded) && Physics.Raycast(point, lastPoint, distance, LayerMask.GetMask("StaticObjects"))){
+            if((distance > minDistance || touchEnded)){ //removed, because waypoints currently are INSIDE the floor plane and therefore will always have a collider in beteween but never touch a wall -> && Physics.Raycast(lastPoint, point, distance, LayerMask.GetMask("StaticObjects"))
                 /* Translation:
                  * if distance sufficient or touch ended, test if new point leads thrugh a wall
                 */
                 playerMotionPath.Add(point);
+                Debug.Log("PlayerMotionPath.Count: " + playerMotionPath.Count);
             }
-
-            //playerMotionPath_temporary
         }
 
         private int motionFingerId = -1;
@@ -118,7 +120,7 @@ namespace theHeist
                 }
 
                 //At this point we should have a touch ready for use
-                Debug.Log(motionFingerId);
+                Debug.Log("motionFingerId: " + motionFingerId);
                 addToPlayerMotionPath(motionFinger);
             }else{ //User isn't interacting
                 motionFingerId = -1; //currently not tracking a finger
