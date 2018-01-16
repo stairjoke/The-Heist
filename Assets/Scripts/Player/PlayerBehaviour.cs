@@ -43,7 +43,9 @@ namespace theHeist
         }
 
         public float minDistance = 2;
-        private List<Vector3> playerMotionPath = new List<Vector3>();
+        public Transform waypointPrefab;
+        public Transform waypointPathObject;
+        private List<Transform> playerMotionPath = new List<Transform>();
         private void addToPlayerMotionPath(Touch finger){
             Debug.Log("TRY: Add waypoint");
             /* convert to world coordinates
@@ -59,9 +61,11 @@ namespace theHeist
             */
             RaycastHit[] hits = fingerToRaycastHit(finger, LayerMask.GetMask("screenToWorldRaycastTarget"));
             Vector3 point = (hits.Length > 0) ? hits[0].point : this.transform.position; //works
-            Vector3 lastPoint = (playerMotionPath.Count <= 0) ? this.transform.position : playerMotionPath[playerMotionPath.Count - 1];
+            Vector3 lastPoint = (playerMotionPath.Count <= 0) ? this.transform.position : playerMotionPath[playerMotionPath.Count - 1].transform.position;
             float distance = Vector3.Distance(point, lastPoint);
             bool touchEnded = false;
+            waypointPathObject.GetComponent<LineRenderer>().enabled = false;
+
             if(finger.phase == TouchPhase.Ended || finger.phase == TouchPhase.Canceled){
                 touchEnded = true;
                 Debug.Log("Touch Ended");
@@ -69,14 +73,23 @@ namespace theHeist
             //If this is a new gesture, clear the old path
             if(finger.phase == TouchPhase.Began){
                 Debug.Log("New touch, clearing waypoint path");
+                waypointPathObject.GetComponent<LineRenderer>().enabled = true;
+                foreach(Transform waypoint in playerMotionPath){
+                    Destroy(waypoint.gameObject);
+                }
                 playerMotionPath.Clear();
             }
 
+            Vector3[] waypointLinePositions = new Vector3[2];
+            waypointLinePositions[0] = lastPoint;
+            waypointLinePositions[1] = point;
+            waypointPathObject.GetComponent<LineRenderer>().SetPositions(waypointLinePositions);
             if((distance > minDistance || touchEnded)){ //removed, because waypoints currently are INSIDE the floor plane and therefore will always have a collider in beteween but never touch a wall -> && Physics.Raycast(lastPoint, point, distance, LayerMask.GetMask("StaticObjects"))
                 /* Translation:
                  * if distance sufficient or touch ended, test if new point leads thrugh a wall
                 */
-                playerMotionPath.Add(point);
+                Transform waypoint = Instantiate(waypointPrefab, point, Quaternion.LookRotation(Vector3.forward));
+                playerMotionPath.Add(waypoint);
                 Debug.Log("PlayerMotionPath.Count: " + playerMotionPath.Count);
             }
         }
@@ -134,7 +147,8 @@ namespace theHeist
             */
             planPlayerMovement();
             if(playerMotionPath.Count > 0 && navigation.remainingDistance < minDistance/4){
-                navigation.SetDestination(playerMotionPath[0]);
+                navigation.SetDestination(playerMotionPath[0].position);
+                Destroy(playerMotionPath[0].gameObject);
                 playerMotionPath.RemoveAt(0);
             }
         }
