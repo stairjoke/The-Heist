@@ -17,22 +17,18 @@ namespace theHeist
             //abstractInputs = UserInputAbstractionEmpty.GetComponent<UserInputAbstraction>();
         }
 
-        //Moevement
         private RaycastHit[] fingerToRaycastHit(Touch finger, LayerMask mask){
-            var ray = Camera.current.ScreenPointToRay(finger.position);
-            RaycastHit[] hits;
-            hits = Physics.RaycastAll(ray, 50, mask);
-            return hits;
+            return Physics.RaycastAll(
+                       Camera.current.ScreenPointToRay(finger.position),
+                       50,
+                       mask
+                   ); //Camera distance less than 50
         }
         private bool fingerTouchingGameObject(Touch finger, GameObject target){
-            //trace from camera to game
             bool hitMe = false;
-            RaycastHit[] hits;
-            //collect all collisions of raycast
-            hits = fingerToRaycastHit(finger, LayerMask.GetMask("UserInteractible"));
 
-            //test if once of the collisions hit the target
-            foreach(RaycastHit hit in hits){
+            //Get all hits of finger-to-world ray and test
+            foreach(RaycastHit hit in fingerToRaycastHit(finger, LayerMask.GetMask("UserInteractible"))){
                 LinkToToplevel top = hit.transform.GetComponent<LinkToToplevel>();
                 if(top.getToplevel().gameObject.Equals(target)){
                     hitMe = true;
