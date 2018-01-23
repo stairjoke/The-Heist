@@ -42,7 +42,7 @@ namespace theHeist
         }
 
 
-        private float minDistance = 3f;
+        private float minDistance = 7f;
         public Transform waypointPrefab;
         public Transform waypointPathObject;
         private List<Transform> playerMotionPath = new List<Transform>();
