@@ -23,10 +23,10 @@ namespace theHeist
                 return new RaycastHit[0];
             }
             return Physics.RaycastAll(
-                       Camera.current.ScreenPointToRay(pos),
-                       50,
-                       mask
-                   ); //Camera distance less than 50
+                Camera.current.ScreenPointToRay(pos),
+                50,
+                mask
+            ); //Camera distance less than 50
         }
         private bool fingerTouchingGameObject(Touch finger, GameObject target){
             bool hitMe = false;
@@ -41,55 +41,55 @@ namespace theHeist
             return hitMe;
         }
 
-        private float minDistance = 0.5f;
+
+        private float minDistance = 3f;
         public Transform waypointPrefab;
         public Transform waypointPathObject;
         private List<Transform> playerMotionPath = new List<Transform>();
+
         private void addToPlayerMotionPath(Touch finger){
-            Debug.Log("TRY: Add waypoint");
-            /* convert to world coordinates
-             * see if there are obstacles between this point and last point
-             * > only accept points with no obstacles, to avoid cheating by
-             * > dragging across a labyrinth wall
-             * 
-             * test if the distance to last point in List is big enough OR if
-             * the touch ended
-             * > add to point list
-             * 
-             * if point added to list return true, else return false
-            */
-            RaycastHit[] hits = fingerToRaycastHit(finger, LayerMask.GetMask("screenToWorldRaycastTarget"));
-            Vector3 point = (hits.Length > 0) ? hits[0].point : this.transform.position; //works
+            RaycastHit[] hits = fingerToRaycastHit(
+                finger,
+                LayerMask.GetMask("screenToWorldRaycastTarget")
+            );
+            //touch point = transform position if user did not hit gameObject
+            Vector3 point = (hits.Length > 0) ? hits[0].point : this.transform.position;
+            //lastPoint = transform position is there is no last point
             Vector3 lastPoint = (playerMotionPath.Count <= 0) ? this.transform.position : playerMotionPath[playerMotionPath.Count - 1].transform.position;
             float distance = Vector3.Distance(point, lastPoint);
             bool touchEnded = false;
-            waypointPathObject.GetComponent<LineRenderer>().enabled = false;
 
+            //if the finger was removed from the display during the last frame
             if(finger.phase == TouchPhase.Ended || finger.phase == TouchPhase.Canceled){
                 touchEnded = true;
-                Debug.Log("Touch Ended");
+
+                //hide line from last point to finger
+                waypointPathObject.GetComponent<LineRenderer>().enabled = false;
             }
-            //If this is a new gesture, clear the old path
+
+            //if the finger began touching the display during the last frame
             if(finger.phase == TouchPhase.Began){
-                Debug.Log("New touch, clearing waypoint path");
+                //show line from last point to finger
                 waypointPathObject.GetComponent<LineRenderer>().enabled = true;
+
+                //remove all the dots
                 foreach(Transform waypoint in playerMotionPath){
                     Destroy(waypoint.gameObject);
                 }
-                playerMotionPath.Clear();
+                playerMotionPath.Clear(); //remove all the position from the path
             }
 
+            //position the line from point to finger
             Vector3[] waypointLinePositions = new Vector3[2];
             waypointLinePositions[0] = lastPoint;
             waypointLinePositions[1] = point;
             waypointPathObject.GetComponent<LineRenderer>().SetPositions(waypointLinePositions);
-            if((distance > minDistance || touchEnded)){ //removed, because waypoints currently are INSIDE the floor plane and therefore will always have a collider in beteween but never touch a wall -> && Physics.Raycast(lastPoint, point, distance, LayerMask.GetMask("StaticObjects"))
-                /* Translation:
-                 * if distance sufficient or touch ended, test if new point leads thrugh a wall
-                */
+
+            //if distance is sufficient for nw point in path
+            if((distance > minDistance || touchEnded)){ 
+                //MISING: needs to check for collision in between last and next point
                 Transform waypoint = Instantiate(waypointPrefab, point, Quaternion.LookRotation(Vector3.forward));
                 playerMotionPath.Add(waypoint);
-                Debug.Log("PlayerMotionPath.Count: " + playerMotionPath.Count);
             }
         }
 
