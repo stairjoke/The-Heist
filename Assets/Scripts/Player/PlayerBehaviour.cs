@@ -18,8 +18,12 @@ namespace theHeist
         }
 
         private RaycastHit[] fingerToRaycastHit(Touch finger, LayerMask mask){
+            var pos = finger.position;
+            if(pos.Equals(new Vector2(0,0))){
+                return new RaycastHit[0];
+            }
             return Physics.RaycastAll(
-                       Camera.current.ScreenPointToRay(finger.position),
+                       Camera.current.ScreenPointToRay(pos),
                        50,
                        mask
                    ); //Camera distance less than 50
@@ -34,11 +38,10 @@ namespace theHeist
                     hitMe = true;
                 }
             }
-
             return hitMe;
         }
 
-        public float minDistance = 2;
+        private float minDistance = 0.5f;
         public Transform waypointPrefab;
         public Transform waypointPathObject;
         private List<Transform> playerMotionPath = new List<Transform>();
