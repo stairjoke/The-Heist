@@ -42,7 +42,7 @@ namespace theHeist
         }
 
 
-        private float minDistance = 7f;
+        private float minDistance = 3f;
         public Transform waypointPrefab;
         public Transform waypointPathObject;
         private List<Transform> playerMotionPath = new List<Transform>();
@@ -123,7 +123,6 @@ namespace theHeist
                     //right one to take input from
                     foreach(Touch finger in Input.touches){
                         if(fingerTouchingGameObject(finger, this.gameObject)){
-                            Debug.Log("Finger touching game object"); //works
                             motionFinger = finger;
                             motionFingerId = motionFinger.fingerId;
                             break;
@@ -132,7 +131,6 @@ namespace theHeist
                 }
 
                 //At this point we should have a touch ready for use
-                Debug.Log("motionFingerId: " + motionFingerId);
                 addToPlayerMotionPath(motionFinger);
             }else{ //User isn't interacting
                 motionFingerId = -1; //currently not tracking a finger
