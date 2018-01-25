@@ -68,7 +68,7 @@ namespace theHeist
             }
 
             //if the finger began touching the display during the last frame
-            if(finger.phase == TouchPhase.Began){
+            if(finger.phase == TouchPhase.Began && fingerTouchingGameObject(finger, this.gameObject)){
                 //show line from last point to finger
                 waypointPathObject.GetComponent<LineRenderer>().enabled = true;
 
