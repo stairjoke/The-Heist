@@ -32,7 +32,6 @@ public class ObservePlayer : MonoBehaviour {
             lerpStart = Vector3.Lerp(lerpStart, transform.position, touchDelayRamp/touchDelayRampTime);
         }else{
             touchDelayRamp = 0;
-            Debug.Log("Touching");
             lerpStart = transform.position;
         }
 	}

@@ -45,6 +45,7 @@ namespace theHeist
         private float minDistance = 3f;
         public Transform waypointPrefab;
         public Transform waypointPathObject;
+        public Transform waypointPathErrorGameObject;
         private List<Transform> playerMotionPath = new List<Transform>();
 
         private void addToPlayerMotionPath(Touch finger){
@@ -84,13 +85,36 @@ namespace theHeist
             waypointLinePositions[0] = lastPoint;
             waypointLinePositions[1] = point;
             waypointPathObject.GetComponent<LineRenderer>().SetPositions(waypointLinePositions);
+            waypointPathErrorGameObject.GetComponent<LineRenderer>().SetPositions(waypointLinePositions);
+            //don't show errors yet
+            var waypointErrors = false;
+
 
             //if distance is sufficient for nw point in path
-            if((distance > minDistance || touchEnded)){ 
+            if(distance > minDistance || touchEnded || playerMotionPath.Count < 1){
                 //MISING: needs to check for collision in between last and next point
-                Transform waypoint = Instantiate(waypointPrefab, point, Quaternion.LookRotation(Vector3.forward));
-                playerMotionPath.Add(waypoint);
+                var waypointPathHits = Physics.Linecast(
+                    new Vector3(
+                        lastPoint.x,
+                        1,
+                        lastPoint.z
+                    ),
+                    new Vector3(
+                        point.x,
+                        1,
+                        point.z
+                    ));
+                
+                if (waypointPathHits) //No collision other than self
+                {
+                    //now show the errors
+                    waypointErrors = true;
+                }else{
+                    Transform waypoint = Instantiate(waypointPrefab, point, Quaternion.LookRotation(Vector3.forward));
+                    playerMotionPath.Add(waypoint);
+                }
             }
+            waypointPathErrorGameObject.GetComponent<LineRenderer>().enabled = waypointErrors;
         }
 
         private int motionFingerId = -1;
@@ -135,6 +159,8 @@ namespace theHeist
             }else{ //User isn't interacting
                 motionFingerId = -1; //currently not tracking a finger
                 //tapping is not registered in motion methods, interrupted touches are ignored
+
+                waypointPathErrorGameObject.GetComponent<LineRenderer>().enabled = false;
             }
             return false;
         }
