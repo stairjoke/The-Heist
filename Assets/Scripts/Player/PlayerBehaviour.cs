@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace theHeist
-{
-    public class PlayerBehaviour : MonoBehaviour
-    {
+public class PlayerBehaviour : MonoBehaviour {
 
+<<<<<<< HEAD
         private NavMeshAgent navigation;
         //public Transform UserInputAbstractionEmpty;
 
@@ -174,8 +172,40 @@ namespace theHeist
                 Destroy(playerMotionPath[0].gameObject);
                 playerMotionPath.RemoveAt(0);
             }
-        }
+=======
+    public float moveSpeed = 1;
+    private float backupInitialDragValue;
+    private Rigidbody me;
+    public Transform UserInputAbstractionEmpty;
+    private UserInputAbstraction abstractInputs;
 
+    void Start(){
+        backupInitialDragValue = GetComponent<Rigidbody>().drag;
+        me = GetComponent<Rigidbody>();
+        abstractInputs = UserInputAbstractionEmpty.GetComponent<UserInputAbstraction>();
+    }
+
+    private void setDragDefault(){
+        me.drag = backupInitialDragValue;
+    }
+
+    public void receiveForce(Vector3 force3D, float dragDifference = 0f){
+        /*
+         * Receives external forces and drag
+         * Example: Player runs into force field
+         * Example: Player runs into mud
+        */
+        force3D.y = 0f;
+        if (!force3D.magnitude.Equals(0f)){ //Only apply if relevant
+            me.AddForce(force3D, ForceMode.Force);
+        }
+        if (!dragDifference.Equals(0f)){ //Only apply if relevant
+            me.drag = backupInitialDragValue + dragDifference;
+>>>>>>> parent of 5c0b977... namespace, acceleration remapping to change sensitivity
+        }
+    }
+
+<<<<<<< HEAD
         //Fighting
         private void shoot()
         {
@@ -194,6 +224,32 @@ namespace theHeist
         {
             shoot(); //First shoot
             excecutePlayerMovement(); //movement
+=======
+    private void move(){
+        /*
+         * add motion to rigidbody using deltaTime and move Speed
+         * add motino as force, not at acceleration to avoid infinite speeds
+        */
+        me.AddForce(abstractInputs.motionVector() * moveSpeed * Time.deltaTime, ForceMode.Force);
+    }
+
+    private void shoot(){
+        if(UserInputAbstraction.isShooting()){
+            //GetComponent -> Weapon -> isFiring=true
+        }else{
+            //GetComponent -> Weapon -> isFiring=false
+>>>>>>> parent of 5c0b977... namespace, acceleration remapping to change sensitivity
         }
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        shoot(); //First shoot
+        move(); //Then Move
+        setDragDefault(); //Then reset drag, incase it was changed by environment
+                          /*
+                           * Drag reset must be done last, in order for external drag sources to have an impact on move()
+                          */
     }
 }
